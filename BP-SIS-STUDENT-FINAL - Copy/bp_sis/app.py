@@ -217,8 +217,8 @@ def create_app(mode: str = "vulnerable", database_path: str | Path | None = None
         term = request.args.get("q", "")
         conn = get_db()
         # INTENTIONAL SQL INJECTION: the search term is concatenated into SQL.
-        query = "SELECT s.id, s.student_number, u.full_name, s.program, s.section, e.id AS enrollment_id, sub.code, g.grade FROM students s JOIN users u ON u.id=s.user_id LEFT JOIN enrollments e ON e.student_id=s.id LEFT JOIN subjects sub ON sub.id=e.subject_id LEFT JOIN grades g ON g.enrollment_id=e.id WHERE s.student_number LIKE '%" + term + "%' OR u.full_name LIKE '%" + term + "%'"
-        try: rows = conn.execute(query).fetchall()
+        query = "SELECT s.id, s.student_number, u.full_name, s.program, s.section, e.id AS enrollment_id, sub.code, g.grade FROM students s JOIN users u ON u.id=s.user_id LEFT JOIN enrollments e ON e.student_id=s.id LEFT JOIN subjects sub ON sub.id=e.subject_id LEFT JOIN grades g ON g.enrollment_id=e.id WHERE s.student_number LIKE ? OR u.full_name LIKE ?"
+        try: rows = conn.execute(query, (f"%{term}%", f"%{term}%")).fetchall()
         except sqlite3.Error: rows = []
         return render_template("faculty_students.html", rows=rows, term=term)
 
